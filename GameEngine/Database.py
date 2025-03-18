@@ -1,5 +1,4 @@
-IIILetterWords = {
-    1: "act", 2: "add", 3: "ado", 4: "age", 5: "ago", 6: "aid", 7: "aim", 8: "air", 9: "ale", 10: "all",
+IIILetterWords = {1: "act", 2: "add", 3: "ado", 4: "age", 5: "ago", 6: "aid", 7: "aim", 8: "air", 9: "ale", 10: "all",
     11: "amp", 12: "and", 13: "ant", 14: "any", 15: "ape", 16: "apt", 17: "arc", 18: "are", 19: "ark", 20: "arm",
     21: "art", 22: "ash", 23: "ask", 24: "asp", 25: "ass", 26: "ate", 27: "awe", 28: "axe", 29: "bad", 30: "bag",
     31: "ban", 32: "bar", 33: "bat", 34: "bay", 35: "bed", 36: "bee", 37: "beg", 38: "bet", 39: "bib", 40: "bid",
@@ -41,6 +40,8 @@ IIILetterWords = {
     391: "yak", 392: "yam", 393: "yay", 394: "yea", 395: "yen", 396: "yes", 397: "yet", 398: "you", 399: "yow", 400: "zip",
     401: "zoo"
 }
+IIILetterWords = {k: v.upper() for k, v in IIILetterWords.items()}
+
 VLetterWords = {
     1: "ABACK", 2: "ABASE", 3: "ABASH", 4: "ABATE", 5: "ABBEY",
     6: "ABBOT", 7: "ABHOR", 8: "ABIDE", 9: "ABODE", 10: "ABORT",
