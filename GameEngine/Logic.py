@@ -61,7 +61,7 @@ def playGame(n):
 
 pass
 
-userinput = 0
+userinput =0
 
 while userinput != -1:
     print("Welcome to Wordle+, please select desired operation from the menu\n"
