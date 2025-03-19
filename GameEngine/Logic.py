@@ -2,6 +2,7 @@ from collections import Counter
 from Database import *
 import random
 import time
+from Hint import Hint
 
 def printArr(arr):
     for item in arr:
@@ -11,6 +12,7 @@ def printArr(arr):
 def playGame():
     n = 0
     my_word = "Null"
+    givenHint = False
     while True:
         print("Please choose difficulty level to continue:\n"
               "1.|█____| Easy: 3-letter words\n"
@@ -70,12 +72,19 @@ def playGame():
 
             if matching == ['*'] * n:
                 end = time.time()
-                print(f"Congratulations! You guessed the word {my_word} correctly in {int((end - start) // 60)} minutes and {((end - start) % 60):.2f} seconds, and in {entries} tries!")
+                print(f"Congratulations! You guessed the word {my_word} correctly in {f"{int((end - start) // 60)} minutes and " if (end - start) >= 60 else ''}{((end - start) % 60):.2f} seconds, and in {entries} tries!")
                 break
 
         elif userinput == "IGIVEUP":
             print("The word was " + my_word + "! Better luck next time though!")
             break
+        elif userinput == "GIVEMEAHINT":
+            if not givenHint:
+                Hint(my_word)
+                givenHint = True
+            else:
+                print("You have already used a hint for this word")
+            continue
         else:
             print("Not a word, please try again. Make sure your word is not exceeding the word length limit of " + str(n) + ".")
             continue
