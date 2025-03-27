@@ -1,8 +1,11 @@
 from collections import Counter
-from Database import *
+import Database
 import random
 import time
 from Hint import Hint
+from CheckWord import isValidWord
+
+Database.load_words()
 
 def printArr(arr):
     for item in arr:
@@ -36,13 +39,13 @@ def playGame():
             continue
 
     if n == 3:
-        my_word = three_letter_words.get(random.randint(0, len(three_letter_words)))
+        my_word = random.choice(list(Database.three_letter_words.keys()))
         print("Easy mode: ")
     if n == 5:
-        my_word = five_letter_words.get(random.randint(0, len(five_letter_words)))
+        my_word = random.choice(list(Database.five_letter_words.keys()))
         print("Medium mode: ")
     if n == 7:
-        my_word = seven_letter_words.get(random.randint(0, len(seven_letter_words)))
+        my_word = random.choice(list(Database.seven_letter_words.keys()))
         print("Hard mode: ")
 
 
@@ -53,7 +56,7 @@ def playGame():
     while True:
 
         userinput = input().upper()
-        if (n == 3 and userinput in three_letter_words.values()) or (n == 5 and userinput in five_letter_words.values()) or (n == 7 and userinput in seven_letter_words.values()):
+        if isValidWord(userinput, n):
 
             matching = ['‾'] * n
             remaining = Counter(my_word)

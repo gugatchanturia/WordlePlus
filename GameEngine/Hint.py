@@ -19,4 +19,4 @@ def Hint(my_word):
   print(completion.choices[0].message.content)
 pass
 #FOR TESTING
-Hint("fog")
+#Hint("fog")
