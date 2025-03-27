@@ -1,0 +1,13 @@
+27.03.2025
+Updated the core of the game itself - Word validation.
+Previously game used to just check the existing dictionaries only and return false even if the given valid word was not present in the database.
+With this update now the game validates twice, first validation is in the database, if the word is present rest is skipped,
+if not then the game asks ChatGPT if the word is valid. If it is valid word and it is not in the existing database, then
+the game self-updates itself and adds user-given valid words to the database so that the game does not have to validate same word
+twice using ChatGPT, which saves resources.
+
+I had to change the structure of the database too. I changed previously existing databases from python dictionaries to json files.
+This technique allows me to hardcode ChatGPT's validated word, which later can be reused without a need to validate twice.
+
+Now initial Database.py contains only the necessary methods to load the .json files in memory so that python interprets it as dictionary,
+and performs the same as it would be with a regular dictionary. And also a method that adds elements to the .json file for reusability.
