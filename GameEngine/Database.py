@@ -18,7 +18,6 @@ def load_words():
         five_letter_words = json.load(f5)
     with open(SEVEN_PATH) as f7:
         seven_letter_words = json.load(f7)
-        
 
 def addToDictionary(word, file_path):
     print("Adding the word to the database... ", end = "")
