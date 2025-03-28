@@ -11,3 +11,8 @@ This technique allows me to hardcode ChatGPT's validated word, which later can b
 
 Now initial Database.py contains only the necessary methods to load the .json files in memory so that python interprets it as dictionary,
 and performs the same as it would be with a regular dictionary. And also a method that adds elements to the .json file for reusability.
+
+28.03.2025
+Changed the case of letters due to yesterday's database format change. I was previously uppercasing letters to match previous format,
+but now I lowercase them to match current format. This change makes sure that game works properly, since it was not previously and user
+could never win because it never properly compared them. User's given "CAT" != "cat" from database.

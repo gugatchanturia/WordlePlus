@@ -12,7 +12,10 @@ def Hint(my_word):
     model="gpt-4o-mini",
     store=True,
     messages=[
-      {"role": "user", "content": f"Write a basic explanation of a given word, basically a hint for a wordle game in maximum one sentence, hint should not be too clear, so that it's a little bit challenging for user to guess the word. The word: {my_word}"}
+      {"role": "user", "content": f"Write a basic explanation of a given word, "
+                                  f"basically a hint for a wordle game in maximum one sentence, "
+                                  f"hint should not be too clear, so that it's a little bit challenging for user to guess the word. "
+                                  f"The word: {my_word}"}
     ]
   )
 

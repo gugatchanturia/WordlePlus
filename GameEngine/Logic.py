@@ -55,7 +55,7 @@ def playGame():
 
     while True:
 
-        userinput = input().upper()
+        userinput = input().lower()
         if isValidWord(userinput, n):
 
             matching = ['‾'] * n
@@ -78,10 +78,10 @@ def playGame():
                 print(f"Congratulations! You guessed the word {my_word} correctly in {f"{int((end - start) // 60)} minutes and " if (end - start) >= 60 else ''}{((end - start) % 60):.2f} seconds, and in {entries} tries!")
                 break
 
-        elif userinput == "IGIVEUP":
+        elif userinput == "igiveup":
             print("The word was " + my_word + "! Better luck next time though!")
             break
-        elif userinput == "GIVEMEAHINT":
+        elif userinput == "givemeahint":
             if not givenHint:
                 Hint(my_word)
                 givenHint = True
