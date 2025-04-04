@@ -32,8 +32,19 @@ def addToDictionary(word, file_path):
     print("Adding the word to the database... ", end = "")
     word = word.lower()
 
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
+    # Use the correct file path based on the file name
+    if file_path == "three_letter_words.json":
+        actual_path = THREE_PATH
+    elif file_path == "five_letter_words.json":
+        actual_path = FIVE_PATH
+    elif file_path == "seven_letter_words.json":
+        actual_path = SEVEN_PATH
+    else:
+        print("Error: Invalid file path")
+        return
+
+    if os.path.exists(actual_path):
+        with open(actual_path, "r") as f:
             data = json.load(f)
     else:
         data = {}
@@ -41,7 +52,7 @@ def addToDictionary(word, file_path):
     data[word] = 1
 
     # Save everything back
-    with open(file_path, "w") as f:
+    with open(actual_path, "w") as f:
         json.dump(data, f, indent=4)
 
     print("Done!")

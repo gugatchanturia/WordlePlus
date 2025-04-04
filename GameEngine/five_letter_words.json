@@ -2195,5 +2195,8 @@
     "zoned": 1,
     "zones": 1,
     "zooms": 1,
-    "bread": 1
+    "bread": 1,
+    "sigma": 1,
+    "minus": 1,
+    "mount": 1
 }
