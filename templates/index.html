@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordlePlus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WordlePlus</h1>
+            <p class="subtitle">An enhanced version of Wordle with multiple difficulty levels</p>
+        </header>
+
+        <div id="game-setup" class="section">
+            <h2>Choose Difficulty</h2>
+            <div class="difficulty-buttons">
+                <button onclick="startGame(3)" class="difficulty-btn">
+                    <span class="difficulty-indicator">|█____|</span>
+                    Easy (3 letters)
+                </button>
+                <button onclick="startGame(5)" class="difficulty-btn">
+                    <span class="difficulty-indicator">|███__|</span>
+                    Medium (5 letters)
+                </button>
+                <button onclick="startGame(7)" class="difficulty-btn">
+                    <span class="difficulty-indicator">|█████|</span>
+                    Hard (7 letters)
+                </button>
+            </div>
+        </div>
+
+        <div id="game-board" class="section hidden">
+            <div class="game-info">
+                <span id="attempts">Attempts: 0</span>
+                <button id="hint-btn" onclick="getHint()" class="action-btn">Get Hint</button>
+                <button id="give-up-btn" onclick="giveUp()" class="action-btn">Give Up</button>
+            </div>
+
+            <div id="guess-history" class="guess-history"></div>
+
+            <div class="input-section">
+                <input type="text" id="guess-input" maxlength="7" placeholder="Enter your guess">
+                <button onclick="submitGuess()" class="submit-btn">Guess</button>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+
+        <div id="game-over" class="section hidden">
+            <h2 id="game-over-message"></h2>
+            <button onclick="resetGame()" class="reset-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html> 

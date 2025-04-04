@@ -4,6 +4,7 @@ from openai import OpenAI
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
+
 def Hint(my_word):
   client = OpenAI(
     api_key=api_key
@@ -19,7 +20,7 @@ def Hint(my_word):
     ]
   )
 
-  print(completion.choices[0].message.content)
-pass
+  return completion.choices[0].message.content
+
 #FOR TESTING
 #Hint("fog")

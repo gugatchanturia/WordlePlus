@@ -1,15 +1,13 @@
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-import Database
-
-Database.load_words()  # Load words from the JSON files into memory
+from GameEngine.Database import load_words, addToDictionary
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
 
 # Load existing words from JSON at startup
-Database.load_words()
+load_words()
 
 def isValidWord(usersWord, n):
 
@@ -18,7 +16,7 @@ def isValidWord(usersWord, n):
     if len(usersWord) != n:
         return False
 
-    elif (n == 3 and usersWord in Database.three_letter_words) or (n == 5 and usersWord in Database.five_letter_words) or (n == 7 and usersWord in Database.seven_letter_words):
+    elif (n == 3 and usersWord in load_words().three_letter_words) or (n == 5 and usersWord in load_words().five_letter_words) or (n == 7 and usersWord in load_words().seven_letter_words):
         return True
 
     else:
@@ -45,14 +43,14 @@ def isValidWord(usersWord, n):
         if isValid == "True":
             print("ChatGPT said that your word is valid, thanks for improving the game!")
             if n == 3:
-                Database.addToDictionary(usersWord, "three_letter_words.json")
-                Database.load_words()
+                addToDictionary(usersWord, "three_letter_words.json")
+                load_words()
             elif n == 5:
-                Database.addToDictionary(usersWord, "five_letter_words.json")
-                Database.load_words()
+                addToDictionary(usersWord, "five_letter_words.json")
+                load_words()
             elif n == 7:
-                Database.addToDictionary(usersWord, "seven_letter_words.json")
-                Database.load_words()
+                addToDictionary(usersWord, "seven_letter_words.json")
+                load_words()
             return True
 
     return False
