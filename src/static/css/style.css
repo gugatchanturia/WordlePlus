@@ -815,22 +815,113 @@ input:checked + .slider:before {
 }
 
 .dot {
-    width: 10px;
-    height: 10px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: none;
     background: var(--key-color);
+    color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
     padding: 0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .dot:hover {
     background: var(--key-hover-color);
-    transform: scale(1.2);
+    transform: scale(1.1);
 }
 
 .dot.active {
     background: var(--primary-color);
-    transform: scale(1.2);
+    color: white;
+    transform: scale(1.1);
+}
+
+.leaderboard-list {
+    display: none;
+    padding: 20px;
+    background-color: var(--section-bg);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-list.active {
+    display: block;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    border-bottom: 1px solid var(--grid-border-color);
+    transition: background-color 0.2s;
+}
+
+.leaderboard-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.rank {
+    font-weight: bold;
+    color: var(--primary-color);
+    width: 40px;
+    text-align: center;
+}
+
+.player {
+    flex-grow: 1;
+    margin: 0 1rem;
+    font-weight: 500;
+}
+
+.time {
+    color: var(--secondary-color);
+    font-family: monospace;
+    font-size: 1.1rem;
+    min-width: 100px;
+    text-align: right;
+}
+
+.date {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+    min-width: 100px;
+    text-align: right;
+}
+
+.leaderboard-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+    .leaderboard-item {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .leaderboard-time {
+        width: 100%;
+        text-align: left;
+        margin-left: 40px;
+    }
+
+    .leaderboard-date {
+        width: 100%;
+        text-align: left;
+        margin-left: 40px;
+    }
 } 

@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-from GameEngine.Database import load_words, addToDictionary
+from Database import load_words, addToDictionary
 
 load_dotenv()
 api_key = os.getenv("API_KEY")

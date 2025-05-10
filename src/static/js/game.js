@@ -662,47 +662,34 @@ async function saveUserName(name) {
 async function updateLeaderboard(difficulty) {
     try {
         const response = await fetch(`/api/leaderboard?difficulty=${difficulty}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch leaderboard data');
-        }
-        
         const data = await response.json();
-        const leaderboardList = document.getElementById(`leaderboard-${difficulty}`);
-        if (!leaderboardList) return;
         
-        leaderboardList.innerHTML = '';
-        
-        if (!data.scores || data.scores.length === 0) {
-            leaderboardList.innerHTML = '<div class="leaderboard-empty">No scores yet. Be the first to play!</div>';
-            return;
-        }
+        if (response.ok) {
+            const leaderboardList = document.getElementById(`leaderboard-${difficulty}`);
+            if (!leaderboardList) return;
 
-        // Sort scores by time (fastest first)
-        data.scores.sort((a, b) => a.time - b.time);
+            if (!data.scores || data.scores.length === 0) {
+                leaderboardList.innerHTML = '<div class="leaderboard-empty">No scores yet. Be the first to play!</div>';
+                return;
+            }
 
-        data.scores.forEach((score, index) => {
-            const item = document.createElement('div');
-            item.className = 'leaderboard-item';
-            const date = new Date(score.timestamp);
-            const formattedDate = date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
+            leaderboardList.innerHTML = '';
+            data.scores.forEach((score, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <span class="rank">#${index + 1}</span>
+                    <span class="player">${score.name}</span>
+                    <span class="time">${formatTime(score.time)}</span>
+                    <span class="date">${score.date}</span>
+                `;
+                leaderboardList.appendChild(item);
             });
-            item.innerHTML = `
-                <span class="leaderboard-rank">#${index + 1}</span>
-                <span class="leaderboard-name">${score.name}</span>
-                <span class="leaderboard-time">${formatTime(score.time)}</span>
-                <span class="leaderboard-date">${formattedDate}</span>
-            `;
-            leaderboardList.appendChild(item);
-        });
-    } catch (error) {
-        console.error('Error updating leaderboard:', error);
-        const leaderboardList = document.getElementById(`leaderboard-${difficulty}`);
-        if (leaderboardList) {
-            leaderboardList.innerHTML = '<div class="leaderboard-empty">Error loading scores</div>';
+        } else {
+            console.error('Failed to load leaderboard:', data.error);
         }
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
     }
 }
 
@@ -798,90 +785,30 @@ difficultyTabs.forEach(tab => {
 function navigateLeaderboard(index) {
     if (index < 0 || index >= difficulties.length) return;
     
-    const prevIndex = currentLeaderboardIndex;
-    currentLeaderboardIndex = index;
-    
     // Update dots
     dots.forEach((dot, i) => {
-        if (i === index) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
+        dot.classList.toggle('active', i === index);
     });
     
-    // Get the leaderboard lists
-    const prevList = document.getElementById(`leaderboard-${difficulties[prevIndex]}`);
-    const newList = document.getElementById(`leaderboard-${difficulties[index]}`);
+    // Update leaderboard visibility
+    leaderboardLists.forEach((list, i) => {
+        list.classList.toggle('active', i === index);
+    });
     
-    if (!prevList || !newList) return;
-    
-    // Determine slide direction
-    const isForward = index > prevIndex || (prevIndex === difficulties.length - 1 && index === 0);
-    
-    // Set initial positions
-    newList.style.transform = isForward ? 'translateX(100%)' : 'translateX(-100%)';
-    newList.style.opacity = '0';
-    newList.classList.add('active');
-    
-    // Trigger reflow
-    newList.offsetHeight;
-    
-    // Animate
-    prevList.classList.add('sliding-out');
-    prevList.style.transform = isForward ? 'translateX(-100%)' : 'translateX(100%)';
-    
-    newList.style.transform = 'translateX(0)';
-    newList.style.opacity = '1';
-    
-    // Clean up after animation
-    setTimeout(() => {
-        prevList.classList.remove('active', 'sliding-out');
-        prevList.style.transform = '';
-        prevList.style.opacity = '';
-    }, 500);
+    currentLeaderboardIndex = index;
 }
 
 // Update the updateCarousel function
 function updateCarousel(prevIndex, newIndex) {
-    const prevList = document.getElementById(`leaderboard-${difficulties[prevIndex]}`);
-    const newList = document.getElementById(`leaderboard-${difficulties[newIndex]}`);
-    
-    if (!prevList || !newList) return;
-    
     // Update dots
-    dots.forEach((dot, index) => {
-        if (index === newIndex) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
+    dots[prevIndex].classList.remove('active');
+    dots[newIndex].classList.add('active');
     
-    // Determine slide direction
-    const isForward = newIndex > prevIndex || (prevIndex === difficulties.length - 1 && newIndex === 0);
+    // Update leaderboard visibility
+    leaderboardLists[prevIndex].classList.remove('active');
+    leaderboardLists[newIndex].classList.add('active');
     
-    // Set initial positions
-    newList.style.transform = isForward ? 'translateX(100%)' : 'translateX(-100%)';
-    newList.style.opacity = '0';
-    newList.classList.add('active');
-    
-    // Trigger reflow
-    newList.offsetHeight;
-    
-    // Animate
-    prevList.classList.add('sliding-out');
-    prevList.style.transform = isForward ? 'translateX(-100%)' : 'translateX(100%)';
-    
-    newList.style.transform = 'translateX(0)';
-    newList.style.opacity = '1';
-    
-    // Clean up after animation
-    setTimeout(() => {
-        prevList.classList.remove('active', 'sliding-out');
-        prevList.style.transform = '';
-        prevList.style.opacity = '';
-    }, 500);
+    currentLeaderboardIndex = newIndex;
 }
 
 // Add this function to start auto-transition
