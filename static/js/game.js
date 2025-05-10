@@ -10,7 +10,9 @@ let gameState = {
     currentGuess: '',
     currentRow: 0,
     hintUsed: false,
-    currentHint: ''
+    currentHint: '',
+    isLoading: false,  // Add loading state
+    startTime: null
 };
 
 // DOM elements
@@ -26,6 +28,13 @@ const currentGuessGrid = document.getElementById('current-guess-grid');
 const themeToggle = document.getElementById('checkbox');
 const hintTooltip = document.querySelector('.hint-tooltip');
 const toast = document.getElementById('toast');
+const endgameModal = document.getElementById('endgame-modal');
+const endgameTitle = document.getElementById('endgame-title');
+const endgameResult = document.getElementById('endgame-result');
+const endgameTime = document.getElementById('endgame-time');
+const endgameAttempts = document.getElementById('endgame-attempts');
+const restartSameModeBtn = document.getElementById('restart-same-mode');
+const restartNewModeBtn = document.getElementById('restart-new-mode');
 
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(section => {
@@ -90,12 +99,36 @@ function initGame() {
     // Add event listener for theme toggle
     themeToggle.addEventListener('change', toggleTheme);
 
+    // Add event listeners for hint tooltip
+    hintBtn.addEventListener('mouseenter', () => {
+        if (gameState.hintUsed) {
+            hintTooltip.style.visibility = 'visible';
+            hintTooltip.style.opacity = '1';
+        }
+    });
+
+    hintBtn.addEventListener('mouseleave', () => {
+        hintTooltip.style.visibility = 'hidden';
+        hintTooltip.style.opacity = '0';
+    });
+
     // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.checked = true;
     }
+
+    // Add these event listeners in the initGame function
+    restartSameModeBtn.addEventListener('click', () => {
+        endgameModal.classList.remove('show');
+        startGame(gameState.difficulty);
+    });
+
+    restartNewModeBtn.addEventListener('click', () => {
+        endgameModal.classList.remove('show');
+        showSection('difficulty-section');
+    });
 }
 
 // Toggle dark/light theme
@@ -138,7 +171,9 @@ async function startGame(difficulty) {
                 currentGuess: '',
                 currentRow: 0,
                 hintUsed: false,
-                currentHint: ''
+                currentHint: '',
+                isLoading: false,
+                startTime: new Date()
             };
 
             difficultySection.classList.add('hidden');
@@ -148,6 +183,14 @@ async function startGame(difficulty) {
             // Reset hint button
             hintBtn.classList.remove('lit');
             hintTooltip.textContent = 'Click to get a hint';
+            
+            // Reset keyboard colors
+            const keys = keyboard.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.classList.remove('correct', 'partial', 'incorrect');
+                key.style.backgroundColor = '';
+                key.style.color = '';
+            });
             
             // Create the current guess grid
             createCurrentGuessGrid();
@@ -193,7 +236,7 @@ function updateCurrentGuessGrid() {
 
 // Submit a guess
 async function submitGuess() {
-    if (gameState.gameOver) return;
+    if (gameState.gameOver || gameState.isLoading) return;
 
     const guess = gameState.currentGuess;
     
@@ -208,12 +251,17 @@ async function submitGuess() {
     }
 
     try {
-        const response = await fetch('/api/guess', {
+        // Set loading state
+        gameState.isLoading = true;
+        showToast('Validating word...', 'info');
+        disableInput();
+
+        const response = await fetch('/api/check-guess', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ word: guess })
+            body: JSON.stringify({ guess })
         });
 
         const data = await response.json();
@@ -236,21 +284,16 @@ async function submitGuess() {
                 // Update the current guess grid to show all correct
                 updateCurrentGuessGridWin();
                 
-                showToast(data.message, 'success');
+                showEndgameModal(true);
                 return;
             }
             
             // Create feedback array for the keyboard
-            const result = [];
-            for (let i = 0; i < data.feedback.length; i++) {
-                if (data.feedback[i] === '*') {
-                    result.push('correct');
-                } else if (data.feedback[i] === '^') {
-                    result.push('partial');
-                } else {
-                    result.push('incorrect');
-                }
-            }
+            const result = data.feedback.split('').map(f => {
+                if (f === '*') return 'correct';
+                if (f === '^') return 'partial';
+                return 'incorrect';
+            });
             
             updateGuessHistory(guess, result);
             updateKeyboardState(guess, result);
@@ -261,13 +304,23 @@ async function submitGuess() {
             
             if (gameState.guesses.length >= gameState.maxGuesses) {
                 gameState.gameOver = true;
-                showToast(`Game Over! The word was ${data.word}`, 'error');
+                showEndgameModal(false);
             }
         } else {
-            showToast(data.error, 'error');
+            if (data.error === 'Invalid word') {
+                showToast('Word may not exist', 'error');
+                gameState.currentGuess = '';
+                updateCurrentGuessGrid();
+            } else {
+                showToast(data.error, 'error');
+            }
         }
     } catch (error) {
         showToast('Error checking guess. Please try again.', 'error');
+    } finally {
+        // Reset loading state
+        gameState.isLoading = false;
+        enableInput();
     }
 }
 
@@ -287,9 +340,12 @@ function updateCurrentGuessGridWin() {
 
 // Get a hint
 async function getHint() {
-    if (gameState.gameOver) return;
+    if (gameState.gameOver || gameState.isLoading) return;
 
     try {
+        gameState.isLoading = true;
+        disableInput();
+
         const response = await fetch('/api/hint', {
             method: 'GET'
         });
@@ -312,6 +368,9 @@ async function getHint() {
         }
     } catch (error) {
         showToast('Error getting hint. Please try again.', 'error');
+    } finally {
+        gameState.isLoading = false;
+        enableInput();
     }
 }
 
@@ -328,7 +387,7 @@ async function giveUp() {
         
         if (response.ok) {
             gameState.gameOver = true;
-            showToast(`Game Over! The word was ${data.word}`, 'error');
+            showEndgameModal(false);
         } else {
             showToast(data.error, 'error');
         }
@@ -348,7 +407,9 @@ function resetGame() {
         currentGuess: '',
         currentRow: 0,
         hintUsed: false,
-        currentHint: ''
+        currentHint: '',
+        isLoading: false,
+        startTime: null
     };
 
     welcomeSection.classList.remove('hidden');
@@ -450,6 +511,38 @@ function showToast(text, type) {
     setTimeout(() => {
         toast.className = 'toast';
     }, 3000);
+}
+
+// Add functions to handle input state
+function disableInput() {
+    document.querySelectorAll('.key').forEach(key => {
+        key.disabled = true;
+    });
+    document.removeEventListener('keydown', handlePhysicalKeyPress);
+}
+
+function enableInput() {
+    document.querySelectorAll('.key').forEach(key => {
+        key.disabled = false;
+    });
+    document.addEventListener('keydown', handlePhysicalKeyPress);
+}
+
+// Add this new function to show the endgame modal
+function showEndgameModal(isWin) {
+    const endTime = new Date();
+    const timeSpent = (endTime - gameState.startTime) / 1000; // Convert to seconds
+    const minutes = Math.floor(timeSpent / 60);
+    const seconds = Math.floor(timeSpent % 60);
+    
+    endgameTitle.textContent = isWin ? 'You Win!' : 'Game Over!';
+    endgameResult.textContent = isWin 
+        ? `Congratulations! You guessed the word "${gameState.targetWord}" correctly!`
+        : `The word was "${gameState.targetWord}". Better luck next time!`;
+    endgameTime.textContent = `Time: ${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
+    endgameAttempts.textContent = `Attempts: ${gameState.guesses.length}/${gameState.maxGuesses}`;
+    
+    endgameModal.classList.add('show');
 }
 
 // Initialize the game when the page loads

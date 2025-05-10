@@ -50,10 +50,10 @@
         <section id="game-section" class="section hidden">
             <div class="game-info">
                 <div class="hint-container">
-                    <button id="hint-btn" class="hint-btn" title="Get a hint">
+                    <button id="hint-btn" class="hint-button">
                         <i class="fas fa-lightbulb"></i>
+                        <div class="hint-tooltip">Click to get a hint</div>
                     </button>
-                    <div class="hint-tooltip">Click to get a hint</div>
                 </div>
                 <button id="give-up-btn" class="action-btn">Give Up</button>
             </div>
@@ -102,11 +102,25 @@
 
             <button id="reset-btn" class="reset-btn">Start New Game</button>
         </section>
+
+        <!-- Endgame Modal -->
+        <div id="endgame-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="endgame-title">Game Over!</h2>
+                <div class="endgame-stats">
+                    <p id="endgame-result"></p>
+                    <p id="endgame-time"></p>
+                    <p id="endgame-attempts"></p>
+                </div>
+                <div class="endgame-buttons">
+                    <button id="restart-same-mode" class="modal-btn">Play Again (Same Mode)</button>
+                    <button id="restart-new-mode" class="modal-btn">Try Different Mode</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
     </div>
-
-    <!-- Toast notification -->
-    <div id="toast" class="toast"></div>
-
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
 </body>
 </html> 

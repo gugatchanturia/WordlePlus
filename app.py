@@ -30,79 +30,79 @@ def index():
 
 @app.route('/api/start-game', methods=['POST'])
 def start_game():
-    data = request.json
+    data = request.get_json()
     difficulty = data.get('difficulty')
     
-    # Load words
+    if not difficulty or difficulty not in [3, 5, 7]:
+        return jsonify({'error': 'Invalid difficulty level'}), 400
+    
+    # Load words based on difficulty
     words = load_words()
+    word_list = []
     
-    # Select random word based on difficulty
     if difficulty == 3:
-        word = random.choice(list(words.three_letter_words.keys()))
+        word_list = list(words.three_letter_words.keys())
     elif difficulty == 5:
-        word = random.choice(list(words.five_letter_words.keys()))
-    elif difficulty == 7:
-        word = random.choice(list(words.seven_letter_words.keys()))
+        word_list = list(words.five_letter_words.keys())
     else:
-        return jsonify({'error': 'Invalid difficulty'}), 400
+        word_list = list(words.seven_letter_words.keys())
     
-    # Reset game state
-    game_state['current_word'] = word
+    if not word_list:
+        return jsonify({'error': 'No words available for this difficulty'}), 400
+    
+    # Select a random word
+    game_state['current_word'] = random.choice(word_list)
     game_state['difficulty'] = difficulty
     game_state['start_time'] = time.time()
     game_state['attempts'] = 0
     game_state['hint_used'] = False
     
-    return jsonify({'message': 'Game started'})
+    return jsonify({'word': game_state['current_word']})
 
-@app.route('/api/guess', methods=['POST'])
-def guess():
-    data = request.json
-    guess_word = data.get('word', '').lower()
-    
+@app.route('/api/check-guess', methods=['POST'])
+def check_guess():
     if not game_state['current_word']:
         return jsonify({'error': 'No active game'}), 400
     
-    if len(guess_word) != game_state['difficulty']:
-        return jsonify({'error': f'Word must be {game_state["difficulty"]} letters long'}), 400
+    data = request.get_json()
+    guess = data.get('guess', '').lower()
     
-    if not isValidWord(guess_word, game_state['difficulty']):
+    if not guess:
+        return jsonify({'error': 'No guess provided'}), 400
+    
+    if len(guess) != game_state['difficulty']:
+        return jsonify({'error': f'Guess must be {game_state["difficulty"]} letters long'}), 400
+    
+    if not isValidWord(guess, game_state['difficulty']):
         return jsonify({'error': 'Invalid word'}), 400
     
     game_state['attempts'] += 1
     
-    # Check if word matches
-    if guess_word == game_state['current_word']:
-        end_time = time.time()
-        time_taken = end_time - game_state['start_time']
+    if guess == game_state['current_word']:
         return jsonify({
             'status': 'win',
-            'message': f'Congratulations! You guessed the word in {game_state["attempts"]} attempts and {time_taken:.2f} seconds!',
-            'word': game_state['current_word']
+            'message': 'Congratulations! You guessed the word correctly!'
         })
     
     # Generate feedback
-    feedback = ['‾'] * game_state['difficulty']
-    remaining = {}
-    for char in game_state['current_word']:
-        remaining[char] = remaining.get(char, 0) + 1
+    feedback = ['_'] * len(guess)
+    remaining = list(game_state['current_word'])
     
-    # Check for correct letters in correct positions
-    for i in range(game_state['difficulty']):
-        if guess_word[i] == game_state['current_word'][i]:
+    # First pass: mark correct letters
+    for i in range(len(guess)):
+        if guess[i] == game_state['current_word'][i]:
             feedback[i] = '*'
-            remaining[guess_word[i]] -= 1
+            remaining.remove(guess[i])
     
-    # Check for correct letters in wrong positions
-    for i in range(game_state['difficulty']):
-        if feedback[i] == '‾' and guess_word[i] in remaining and remaining[guess_word[i]] > 0:
+    # Second pass: mark partial matches
+    for i in range(len(guess)):
+        if feedback[i] == '_' and guess[i] in remaining:
             feedback[i] = '^'
-            remaining[guess_word[i]] -= 1
+            remaining.remove(guess[i])
     
     return jsonify({
         'status': 'continue',
-        'feedback': feedback,
-        'attempts': game_state['attempts']
+        'feedback': ''.join(feedback)
     })
 
 @app.route('/api/hint', methods=['GET'])
@@ -123,8 +123,8 @@ def give_up():
         return jsonify({'error': 'No active game'}), 400
     
     return jsonify({
-        'status': 'give-up',
-        'word': game_state['current_word']
+        'word': game_state['current_word'],
+        'message': f'Game over! The word was {game_state["current_word"]}'
     })
 
 if __name__ == '__main__':

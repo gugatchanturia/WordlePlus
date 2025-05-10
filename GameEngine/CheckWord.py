@@ -10,7 +10,6 @@ api_key = os.getenv("API_KEY")
 load_words()
 
 def isValidWord(usersWord, n):
-
     usersWord = usersWord.lower()
 
     if len(usersWord) != n:
@@ -21,8 +20,9 @@ def isValidWord(usersWord, n):
 
     else:
         print("word was not found in the existing dictionaries, asking ChatGPT if the word exists")
-
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(
+            api_key=api_key
+        )
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -53,4 +53,4 @@ def isValidWord(usersWord, n):
                 load_words()
             return True
 
-    return False
+        return False
