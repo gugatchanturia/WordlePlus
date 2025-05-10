@@ -4,22 +4,22 @@ from datetime import datetime
 
 class Leaderboard:
     def __init__(self):
-        self.db_file = 'GameEngine/leaderboard.json'
+        self.db_file = 'src/GameEngine/leaderboard.json'
         self.ensure_db_exists()
         self.load_data()
 
     def ensure_db_exists(self):
+        """Ensure the leaderboard database file exists"""
         if not os.path.exists(self.db_file):
-            initial_data = {
-                'users': {},  # Store user names by device ID
-                'scores': {
-                    '3': [],  # 3-letter word scores
-                    '5': [],  # 5-letter word scores
-                    '7': []   # 7-letter word scores
-                }
-            }
+            # Create the directory if it doesn't exist
+            os.makedirs(os.path.dirname(self.db_file), exist_ok=True)
+            # Create an empty leaderboard
             with open(self.db_file, 'w') as f:
-                json.dump(initial_data, f, indent=4)
+                json.dump({
+                    'easy': [],
+                    'medium': [],
+                    'hard': []
+                }, f, indent=4)
 
     def load_data(self):
         with open(self.db_file, 'r') as f:
@@ -36,37 +36,44 @@ class Leaderboard:
         self.data['users'][device_id] = name
         self.save_data()
 
-    def add_score(self, device_id, difficulty, time_seconds):
-        user_name = self.get_user_name(device_id)
-        if not user_name:
-            return False
-
-        # Remove previous score for this user and difficulty if exists
-        self.data['scores'][str(difficulty)] = [
-            score for score in self.data['scores'][str(difficulty)]
-            if score['device_id'] != device_id
-        ]
+    def add_score(self, difficulty, player_name, score, word):
+        """Add a new score to the leaderboard"""
+        try:
+            with open(self.db_file, 'r') as f:
+                leaderboard = json.load(f)
+        except FileNotFoundError:
+            leaderboard = {
+                'easy': [],
+                'medium': [],
+                'hard': []
+            }
 
         # Add new score
-        new_score = {
-            'device_id': device_id,
-            'name': user_name,
-            'time': time_seconds,
+        leaderboard[difficulty].append({
+            'player': player_name,
+            'score': score,
+            'word': word,
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
-        self.data['scores'][str(difficulty)].append(new_score)
+        })
 
-        # Sort scores by time
-        self.data['scores'][str(difficulty)].sort(key=lambda x: x['time'])
+        # Sort by score (ascending)
+        leaderboard[difficulty].sort(key=lambda x: x['score'])
 
         # Keep only top 10 scores
-        self.data['scores'][str(difficulty)] = self.data['scores'][str(difficulty)][:10]
-        
-        self.save_data()
-        return True
+        leaderboard[difficulty] = leaderboard[difficulty][:10]
+
+        # Save updated leaderboard
+        with open(self.db_file, 'w') as f:
+            json.dump(leaderboard, f, indent=4)
 
     def get_leaderboard(self, difficulty):
-        return self.data['scores'][str(difficulty)]
+        """Get the leaderboard for a specific difficulty"""
+        try:
+            with open(self.db_file, 'r') as f:
+                leaderboard = json.load(f)
+                return leaderboard.get(difficulty, [])
+        except FileNotFoundError:
+            return []
 
     def format_time(self, seconds):
         minutes = int(seconds // 60)

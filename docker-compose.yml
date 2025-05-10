@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  wordleplus:
+  web:
     build: .
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/data
+      - ./src/GameEngine:/app/src/GameEngine
+    env_file:
+      - .env
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production

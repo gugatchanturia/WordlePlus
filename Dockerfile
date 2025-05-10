@@ -1,29 +1,25 @@
-# Use Python 3.9 slim image as base
-FROM python:3.9-slim
+# Use Python 3.11 slim image
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
-COPY . .
-
-# Expose port 5000
-EXPOSE 5000
+COPY src/ /app/src/
+COPY .env* ./
 
 # Set environment variables
-ENV FLASK_APP=app.py
+ENV FLASK_APP=src/app.py
 ENV FLASK_ENV=production
 
+# Expose port
+EXPOSE 5000
+
 # Run the application
-CMD ["python", "app.py"] 
+CMD ["python", "src/app.py"] 

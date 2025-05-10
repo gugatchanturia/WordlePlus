@@ -42,7 +42,7 @@ touch .env
 
 2. Add the following variables to your `.env` file:
 ```env
-FLASK_APP=app.py
+FLASK_APP=src/app.py
 FLASK_ENV=production
 OPENAI_API_KEY=your_api_key_here  # Replace with your OpenAI API key
 ```
@@ -77,7 +77,7 @@ docker build -t wordleplus .
 
 2. Run the container:
 ```bash
-docker run -p 5000:5000 -v $(pwd)/data:/app/data wordleplus
+docker run -p 5000:5000 -v $(pwd)/src/GameEngine:/app/src/GameEngine wordleplus
 ```
 
 ## Development
@@ -110,4 +110,16 @@ python src/app.py
 ## Data Persistence
 
 The game's data (leaderboard and user information) is stored in the `src/GameEngine` directory. This directory is mounted as a volume in Docker to ensure data persistence between container restarts.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
