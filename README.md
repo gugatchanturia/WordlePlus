@@ -1,129 +1,123 @@
 # WordlePlus
 
-WordlePlus is an enhanced version of the popular word-guessing game Wordle, with multiple difficulty levels and an intelligent word validation system. The game features a modern web interface with a virtual keyboard, dark mode, and AI-powered hints.
+A modern take on the classic word-guessing game with multiple difficulty levels and a leaderboard system.
 
-![WordlePlus Screenshot](screenshot.png)
+![WordlePlus Screenshot 1](screenshots/screenshot1.png)
+![WordlePlus Screenshot 2](screenshots/screenshot2.png)
+![WordlePlus Screenshot 3](screenshots/screenshot3.png)
 
 ## Features
 
-- **Multiple Difficulty Levels**: Choose between 3, 5, or 7 letter words
-- **Virtual Keyboard**: Input your guesses using the on-screen keyboard
-- **Intelligent Word Validation**: Uses both local database and AI-powered validation
-- **Hint System**: Get helpful hints using OpenAI's GPT model
-- **Dark Mode**: Toggle between light and dark themes
-- **Responsive Design**: Play on desktop or mobile devices
-- **Visual Feedback**: Clear visual indicators for correct, partial, and incorrect letters
-- **Toast Notifications**: Non-intrusive notifications for game events
+- Multiple difficulty levels (3, 5, and 7 letter words)
+- Real-time feedback on guesses
+- Hint system powered by OpenAI's GPT
+- Leaderboard tracking
+- Dark/Light theme support
+- Responsive design
 
-## Technologies Used
+## Prerequisites
 
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Python with Flask
-- **AI Integration**: OpenAI API for word validation and hints
-- **Database**: JSON-based word storage system
+- Docker and Docker Compose
+- OpenAI API Key (for hint generation and word validation)
 
-## Project Structure
+### Getting an OpenAI API Key
 
-```
-wordleplus/
-├── app.py                  # Main Flask application
-├── requirements.txt        # Python dependencies
-├── static/
-│   ├── css/
-│   │   └── style.css       # Stylesheet
-│   └── js/
-│       └── game.js         # Game logic
-├── templates/
-│   └── index.html          # Main HTML template
-└── GameEngine/
-    ├── Database.py         # Database management system
-    ├── CheckWord.py        # Word validation functionality
-    ├── Hint.py             # AI-powered hint generation
-    ├── Logic.py            # Core game logic
-    ├── three_letter_words.json  # Easy mode dictionary
-    ├── five_letter_words.json   # Medium mode dictionary
-    ├── seven_letter_words.json  # Hard mode dictionary
-    └── .env                # Environment variables (API keys)
+1. Go to [OpenAI's Platform](https://platform.openai.com/)
+2. Sign up or log in to your account
+3. Navigate to the API section
+4. Create a new API key
+5. Copy your API key (you'll need it for the next step)
+
+## Running with Docker
+
+### Environment Setup
+
+Before building the Docker image, you need to set up your environment variables:
+
+1. Create a `.env` file in the project root:
+```bash
+touch .env
 ```
 
-## Installation
+2. Add the following variables to your `.env` file:
+```env
+FLASK_APP=app.py
+FLASK_ENV=production
+OPENAI_API_KEY=your_api_key_here  # Replace with your OpenAI API key
+```
+
+> ⚠️ **Important**: The game requires a valid OpenAI API key to function properly. Without it, the hint system and word validation features will not work.
+
+### Quick Start
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/wordleplus.git
-   cd wordleplus
-   ```
+```bash
+git clone https://github.com/yourusername/WordlePlus.git
+cd WordlePlus
+```
 
-2. Create a virtual environment and activate it:
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+2. Set up your environment variables as described above
 
-3. Install the required packages:
-   ```
-   pip install -r requirements.txt
-   ```
+3. Build and run with Docker Compose:
+```bash
+docker-compose up --build
+```
 
-4. Create a `.env` file in the GameEngine directory with your OpenAI API key:
-   ```
-   API_KEY=your_openai_api_key_here
-   ```
+4. Access the game at `http://localhost:5000`
 
-5. Run the application:
-   ```
-   python app.py
-   ```
+### Manual Docker Build
 
-6. Open your browser and navigate to `http://localhost:5000`
+If you prefer to build and run without Docker Compose:
 
-## How to Play
+1. Build the Docker image:
+```bash
+docker build -t wordleplus .
+```
 
-1. **Start the Game**: Click the "Play" button on the welcome screen
-2. **Select Difficulty**: Choose a word length (3, 5, or 7 letters)
-3. **Make Guesses**: Type your guess using the virtual keyboard or your physical keyboard
-4. **Submit Guess**: Press Enter or click the Enter button on the virtual keyboard
-5. **Use Hints**: Click the light bulb icon to get a hint (available once per game)
-6. **Give Up**: Click the "Give Up" button if you want to see the answer
-7. **Reset Game**: Click the "Reset" button to start a new game
+2. Run the container:
+```bash
+docker run -p 5000:5000 -v $(pwd)/data:/app/data wordleplus
+```
 
-## Color Indicators
+## Development
 
-- **Green**: Letter is correct and in the right position
-- **Yellow**: Letter is in the word but in the wrong position
-- **Gray**: Letter is not in the word
+### Local Development Setup
 
-## Game Engine Components
+1. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-### Database Management System (Database.py)
-- Handles word storage and retrieval
-- Uses JSON files for persistent data management
-- Provides functions to load words and add new words to dictionaries
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-### Word Validation (CheckWord.py)
-- Validates user guesses against the database
-- Uses OpenAI API to validate words not found in the database
-- Automatically adds new valid words to the appropriate dictionary
+3. Set up environment variables:
+```bash
+# Copy the example env file
+cp .env.example .env
+# Edit .env with your OpenAI API key and other configuration
+```
 
-### Hint System (Hint.py)
-- Generates contextual hints using OpenAI's GPT model
-- Provides challenging but helpful hints to guide the player
-- Limited to one hint per game to maintain challenge
+4. Run the development server:
+```bash
+python app.py
+```
 
-## Customization
+## Data Persistence
 
-- **Theme**: Toggle between light and dark mode using the switch in the top-right corner
-- **Difficulty**: Choose different word lengths for varying challenge levels
+The game's data (leaderboard and user information) is stored in the `data` directory. This directory is mounted as a volume in Docker to ensure data persistence between container restarts.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Inspired by the original [Wordle](https://www.nytimes.com/games/wordle) game
-- Word lists sourced from various public domain dictionaries 
+This project is licensed under the MIT License - see the LICENSE file for details. 

@@ -103,6 +103,23 @@
             <button id="reset-btn" class="reset-btn">Start New Game</button>
         </section>
 
+        <!-- Permanent Leaderboard Section -->
+        <section id="leaderboard-section" class="section">
+            <h2>Leaderboards</h2>
+            <div class="leaderboard-carousel">
+                <div class="leaderboard-container">
+                    <div id="leaderboard-3" class="leaderboard-list"></div>
+                    <div id="leaderboard-5" class="leaderboard-list"></div>
+                    <div id="leaderboard-7" class="leaderboard-list"></div>
+                </div>
+                <div class="carousel-dots">
+                    <button class="dot active" data-difficulty="3"></button>
+                    <button class="dot" data-difficulty="5"></button>
+                    <button class="dot" data-difficulty="7"></button>
+                </div>
+            </div>
+        </section>
+
         <!-- Endgame Modal -->
         <div id="endgame-modal" class="modal hidden">
             <div class="modal-content">
@@ -115,6 +132,18 @@
                 <div class="endgame-buttons">
                     <button id="restart-same-mode" class="modal-btn">Play Again (Same Mode)</button>
                     <button id="restart-new-mode" class="modal-btn">Try Different Mode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name Input Modal -->
+        <div id="name-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Enter Your Name</h2>
+                <p>Your name will be saved and displayed on the leaderboard.</p>
+                <div class="name-input-container">
+                    <input type="text" id="name-input" placeholder="Enter your name" maxlength="20">
+                    <button id="save-name" class="modal-btn">Save Name</button>
                 </div>
             </div>
         </div>

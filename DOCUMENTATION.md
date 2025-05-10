@@ -1,217 +1,238 @@
 # WordlePlus Documentation
 
-## Overview
-WordlePlus is a web-based word guessing game that uses ChatGPT for word validation and hint generation. The game features a modern interface with dark mode support, keyboard input, and a hint system.
+## Introduction
 
-## Architecture Overview
+WordlePlus is a modern web-based word-guessing game inspired by the popular Wordle game. This documentation will guide you through understanding and working with the project.
 
-### Frontend Architecture
-The frontend is built using vanilla JavaScript, HTML, and CSS, following a modern component-based approach:
+## Project Overview
 
-1. **HTML Structure**
-   - `index.html`: Contains the main game interface divided into sections:
-     - Welcome screen
-     - Difficulty selection
-     
-### Frontend Error Handling
-1. **Input Validation**
-   - Word length checks
-   - Invalid word patterns
-   - Empty input handling
+### What is WordlePlus?
+WordlePlus is a word-guessing game where players try to guess a hidden word within a limited number of attempts. The game features:
+- Multiple difficulty levels (3, 5, and 7 letter words)
+- Real-time feedback on guesses
+- A hint system
+- Leaderboard tracking
+- Dark/Light theme support
+- Responsive design for all devices
 
-2. **API Error Handling**
-   - Network errors
-   - Invalid responses
-   - Server errors
+### Technical Stack
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Python with Flask
+- **Data Storage**: JSON files
+- **Containerization**: Docker
 
-3. **UI Feedback**
-   - Toast notifications
-   - Visual indicators
-   - Error messages
+## Project Structure
 
-### Backend Error Handling
-1. **Input Validation**
-   - Word format checks
-   - Game state validation
-   - API key validation
-
-2. **ChatGPT Integration**
-   - API error handling
-   - Response parsing
-   - Timeout handling
-
-## Performance Considerations
-
-### Frontend Optimization
-1. **DOM Manipulation**
-   - Batch updates
-   - Virtual DOM-like updates
-   - Efficient event delegation
-
-2. **State Management**
-   - Minimal state updates
-   - Efficient state propagation
-   - Memory management
-
-3. **Asset Loading**
-   - Lazy loading
-   - Asset optimization
-   - Caching strategies
-
-### Backend Optimization
-1. **API Calls**
-   - Request batching
-   - Response caching
-   - Connection pooling
-
-2. **ChatGPT Integration**
-   - Response caching
-   - Request optimization
-   - Error recovery
-
-## Security Considerations
-
-### Frontend Security
-1. **Input Sanitization**
-   - XSS prevention
-   - Input validation
-   - Output encoding
-
-2. **Data Protection**
-   - Secure storage
-   - Token management
-   - Session handling
-
-### Backend Security
-1. **API Security**
-   - Rate limiting
-   - Authentication
-   - Authorization
-
-2. **Data Protection**
-   - Input validation
-   - Output sanitization
-   - Secure storage
-
-## Testing and Debugging
-
-### Frontend Testing
-1. **Unit Testing**
-   - Function testing
-   - Event handling
-   - State management
-
-2. **UI Testing**
-   - Layout testing
-   - Responsive testing
-   - Theme testing
-
-### Backend Testing
-1. **API Testing**
-   - Endpoint testing
-   - Response validation
-   - Error handling
-
-2. **Integration Testing**
-   - ChatGPT integration
-   - Database integration
-   - Frontend integration
-
-## File Structure
-- `templates/index.html`: Main HTML file containing the game interface
-- `static/css/style.css`: Styles for the game interface
-- `static/js/game.js`: Game logic and functionality
-- `app.py`: Flask backend server
-
-## Game State
-The game maintains its state through the `gameState` object:
-```javascript
-{
-    word: "",           // Current word to guess
-    difficulty: "",     // Game difficulty level
-    maxAttempts: 0,     // Maximum number of attempts allowed
-    attempts: 0,        // Current number of attempts
-    currentGuess: "",   // Current guess being typed
-    currentRow: 0,      // Current row in the grid
-    hintUsed: false,    // Whether a hint has been used
-    currentHint: "",    // Current hint text
-    isLoading: false    // Whether the game is in a loading state
-}
+```
+wordleplus/
+├── app.py                  # Main Flask application
+├── requirements.txt        # Python dependencies
+├── static/
+│   ├── css/
+│   │   └── style.css      # Stylesheet
+│   └── js/
+│       └── game.js        # Game logic
+├── templates/
+│   └── index.html         # Main HTML template
+├── GameEngine/
+│   ├── Database.py        # Database management
+│   ├── CheckWord.py       # Word validation
+│   ├── Hint.py           # Hint generation
+│   ├── Logic.py          # Core game logic
+│   └── word_lists/       # Word dictionaries
+├── data/                  # Game data storage
+│   ├── leaderboard.json  # Leaderboard data
+│   └── users.json        # User data
+└── screenshots/          # Project screenshots
 ```
 
-## Key Functions
+## Key Components
 
-### Game Initialization
-- `initGame()`: Sets up event listeners and initializes the game state
-- `startGame(difficulty)`: Starts a new game with the specified difficulty
-- `createCurrentGuessGrid()`: Creates the grid for displaying the current guess
+### 1. Game Engine
+The game engine consists of several Python modules:
 
-### Input Handling
-- `handleKeyPress(event)`: Handles keyboard input for letter entry
-- `handleKeyClick(event)`: Handles virtual keyboard clicks
-- `disableInput()`: Disables input during loading states
-- `enableInput()`: Re-enables input after loading states
+#### Database.py
+- Manages word storage and retrieval
+- Handles leaderboard and user data
+- Uses JSON files for data persistence
 
-### Game Logic
-- `submitGuess()`: Submits the current guess for validation
-- `getHint()`: Requests a hint from ChatGPT
-- `giveUp()`: Ends the current game and reveals the word
-- `checkWin(guess)`: Checks if the guess matches the target word
-- `updateKeyboard(guess, feedback)`: Updates the keyboard colors based on feedback
+#### CheckWord.py
+- Validates user guesses
+- Checks if words exist in the dictionary
+- Provides feedback on guess accuracy
 
-### UI Updates
-- `updateCurrentGuessGrid()`: Updates the current guess grid display
-- `showToast(message, type)`: Displays a toast notification
-- `toggleTheme()`: Switches between light and dark themes
+#### Hint.py
+- Generates helpful hints for players
+- Uses word patterns and common letter combinations
+- Provides contextual hints based on previous guesses
 
-## CSS Variables
-The game uses CSS variables for theming and consistent styling:
+#### Logic.py
+- Implements core game mechanics
+- Manages game state
+- Handles win/loss conditions
 
-### Light Theme
-```css
---primary-color: #007bff;
---secondary-color: #6c757d;
---success-color: #28a745;
---warning-color: #ffc107;
---danger-color: #dc3545;
---light-color: #f8f9fa;
---dark-color: #343a40;
---bg-color: #f8f9fa;
---text-color: #212529;
---section-bg: #ffffff;
---grid-border: #dee2e6;
---grid-active: #e9ecef;
-```
+### 2. Frontend
 
-### Dark Theme
-```css
---primary-color: #0d6efd;
---secondary-color: #6c757d;
---success-color: #198754;
---warning-color: #ffc107;
---danger-color: #dc3545;
---light-color: #f8f9fa;
---dark-color: #212529;
---bg-color: #121212;
---text-color: #f8f9fa;
---section-bg: #1e1e1e;
---grid-border: #343a40;
---grid-active: #2d2d2d;
-```
+#### HTML (index.html)
+- Main game interface
+- Responsive layout
+- Virtual keyboard
+- Game grid
 
-## API Integration
-The game communicates with ChatGPT through the Flask backend:
-- Word validation
-- Hint generation
-- Word selection
+#### CSS (style.css)
+- Modern, clean design
+- Dark/Light theme support
+- Responsive design
+- Animations and transitions
 
-## Responsive Design
-The game interface adapts to different screen sizes:
-- Mobile-friendly keyboard layout
-- Responsive grid sizing
-- Adaptive font sizes
+#### JavaScript (game.js)
+- Game state management
+- User input handling
+- API communication
+- UI updates
+- Leaderboard management
 
-## Local Storage
-The game saves user preferences:
-- Theme preference (light/dark mode)
-- Game statistics (if implemented) 
+### 3. Backend (app.py)
+- Flask web server
+- API endpoints
+- Game state management
+- Data persistence
+
+## API Endpoints
+
+1. `/api/start-game`
+   - POST request
+   - Starts a new game
+   - Parameters: difficulty level
+
+2. `/api/check-guess`
+   - POST request
+   - Validates a guess
+   - Parameters: guess word
+
+3. `/api/hint`
+   - GET request
+   - Provides a hint
+   - Returns: hint text
+
+4. `/api/leaderboard`
+   - GET request
+   - Returns leaderboard data
+   - Parameters: difficulty level
+
+5. `/api/score`
+   - POST request
+   - Saves player score
+   - Parameters: score data
+
+## Data Storage
+
+### Word Lists
+- Stored in JSON format
+- Separate files for each difficulty level
+- Regularly updated with new words
+
+### User Data
+- Stored in `data/users.json`
+- Tracks user preferences
+- Maintains game history
+
+### Leaderboard
+- Stored in `data/leaderboard.json`
+- Tracks high scores
+- Organized by difficulty level
+
+## Development Guide
+
+### Setting Up Development Environment
+
+1. Clone the repository
+2. Create a virtual environment
+3. Install dependencies
+4. Set up environment variables
+5. Run the development server
+
+### Making Changes
+
+1. Follow the existing code structure
+2. Update tests when modifying functionality
+3. Document new features
+4. Update requirements.txt if adding dependencies
+
+### Testing
+
+1. Test all difficulty levels
+2. Verify leaderboard functionality
+3. Check responsive design
+4. Test dark/light theme
+5. Verify data persistence
+
+## Deployment
+
+### Docker Deployment
+1. Build the Docker image
+2. Configure environment variables
+3. Run the container
+4. Access the application
+
+### Manual Deployment
+1. Set up Python environment
+2. Install dependencies
+3. Configure environment variables
+4. Run the Flask application
+
+## Common Issues and Solutions
+
+1. **Word Validation Issues**
+   - Check word list files
+   - Verify API connectivity
+   - Check error logs
+
+2. **Leaderboard Not Updating**
+   - Verify data directory permissions
+   - Check JSON file format
+   - Ensure proper API calls
+
+3. **Theme Switching Problems**
+   - Clear browser cache
+   - Check CSS file loading
+   - Verify JavaScript execution
+
+## Best Practices
+
+1. **Code Organization**
+   - Follow the existing structure
+   - Use meaningful variable names
+   - Add comments for complex logic
+
+2. **Error Handling**
+   - Implement proper error messages
+   - Log errors appropriately
+   - Provide user-friendly feedback
+
+3. **Performance**
+   - Optimize database queries
+   - Minimize API calls
+   - Use efficient algorithms
+
+4. **Security**
+   - Validate user input
+   - Sanitize data
+   - Implement proper error handling
+
+## Future Improvements
+
+1. **Features**
+   - Additional difficulty levels
+   - More word categories
+   - Enhanced hint system
+
+2. **Technical**
+   - Database migration
+   - API optimization
+   - Enhanced security
+
+3. **UI/UX**
+   - More animations
+   - Additional themes
+   - Improved mobile experience 

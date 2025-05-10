@@ -1,0 +1,24 @@
+{
+    "users": {
+        "device_zqlcaik65": "Guga"
+    },
+    "scores": {
+        "3": [
+            {
+                "device_id": "device_zqlcaik65",
+                "name": "Guga",
+                "time": 126.714,
+                "date": "2025-05-10 14:21:25"
+            }
+        ],
+        "5": [
+            {
+                "device_id": "device_zqlcaik65",
+                "name": "Guga",
+                "time": 48.399,
+                "date": "2025-05-10 15:02:43"
+            }
+        ],
+        "7": []
+    }
+}

@@ -8,6 +8,7 @@ import time
 from GameEngine.Database import load_words, addToDictionary
 from GameEngine.CheckWord import isValidWord
 from GameEngine.Hint import Hint
+from GameEngine.Leaderboard import Leaderboard
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
@@ -15,7 +16,7 @@ CORS(app)
 # Load environment variables
 load_dotenv()
 
-# Initialize game state
+# Initialize game state and leaderboard
 game_state = {
     'current_word': None,
     'difficulty': None,
@@ -23,6 +24,8 @@ game_state = {
     'attempts': 0,
     'hint_used': False
 }
+
+leaderboard = Leaderboard()
 
 @app.route('/')
 def index():
@@ -126,6 +129,56 @@ def give_up():
         'word': game_state['current_word'],
         'message': f'Game over! The word was {game_state["current_word"]}'
     })
+
+@app.route('/api/leaderboard', methods=['GET'])
+def get_leaderboard():
+    difficulty = request.args.get('difficulty')
+    if not difficulty or difficulty not in ['3', '5', '7']:
+        return jsonify({'error': 'Invalid difficulty'}), 400
+    
+    scores = leaderboard.get_leaderboard(difficulty)
+    return jsonify({
+        'scores': scores,
+        'difficulty': difficulty
+    })
+
+@app.route('/api/user', methods=['GET', 'POST'])
+def handle_user():
+    device_id = request.headers.get('X-Device-ID')
+    if not device_id:
+        return jsonify({'error': 'Device ID required'}), 400
+
+    if request.method == 'GET':
+        name = leaderboard.get_user_name(device_id)
+        return jsonify({'name': name})
+
+    elif request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        if not name:
+            return jsonify({'error': 'Name required'}), 400
+        
+        leaderboard.set_user_name(device_id, name)
+        return jsonify({'message': 'Name saved successfully'})
+
+@app.route('/api/score', methods=['POST'])
+def add_score():
+    device_id = request.headers.get('X-Device-ID')
+    if not device_id:
+        return jsonify({'error': 'Device ID required'}), 400
+
+    data = request.get_json()
+    difficulty = data.get('difficulty')
+    time_seconds = data.get('time')
+    
+    if not difficulty or not time_seconds:
+        return jsonify({'error': 'Difficulty and time required'}), 400
+    
+    success = leaderboard.add_score(device_id, difficulty, time_seconds)
+    if not success:
+        return jsonify({'error': 'User not found'}), 400
+    
+    return jsonify({'message': 'Score added successfully'})
 
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -35,12 +35,40 @@ const endgameTime = document.getElementById('endgame-time');
 const endgameAttempts = document.getElementById('endgame-attempts');
 const restartSameModeBtn = document.getElementById('restart-same-mode');
 const restartNewModeBtn = document.getElementById('restart-new-mode');
+const nameModal = document.getElementById('name-modal');
+const nameInput = document.getElementById('name-input');
+const saveNameBtn = document.getElementById('save-name');
+const leaderboardList = document.getElementById('leaderboard-list');
+const difficultyTabs = document.querySelectorAll('.difficulty-tab');
+const leaderboardLists = document.querySelectorAll('.leaderboard-list');
+const prevButton = document.querySelector('.carousel-control.prev');
+const nextButton = document.querySelector('.carousel-control.next');
+const indicators = document.querySelectorAll('.indicator');
+const dots = document.querySelectorAll('.dot');
+let deviceId = localStorage.getItem('deviceId') || generateDeviceId();
+let currentLeaderboardIndex = 1; // Start with 5-letter leaderboard
+const difficulties = ['3', '5', '7'];
+let autoTransitionInterval;
 
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(section => {
         section.classList.add('hidden');
     });
     document.getElementById(sectionId).classList.remove('hidden');
+
+    // Show leaderboard only on welcome screen
+    const leaderboardSection = document.getElementById('leaderboard-section');
+    if (sectionId === 'welcome-section') {
+        leaderboardSection.classList.remove('hidden');
+        // Reset to 5-letter leaderboard and load data
+        currentLeaderboardIndex = 1;
+        updateCarousel(0, 1);
+        loadAllLeaderboards();
+        startAutoTransition();
+    } else {
+        leaderboardSection.classList.add('hidden');
+        stopAutoTransition();
+    }
 }
 
 function showMessage(message, isError = false) {
@@ -119,7 +147,7 @@ function initGame() {
         themeToggle.checked = true;
     }
 
-    // Add these event listeners in the initGame function
+    // Add event listeners for restart buttons
     restartSameModeBtn.addEventListener('click', () => {
         endgameModal.classList.remove('show');
         startGame(gameState.difficulty);
@@ -129,6 +157,19 @@ function initGame() {
         endgameModal.classList.remove('show');
         showSection('difficulty-section');
     });
+
+    // Add dot click handlers
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            navigateLeaderboard(index);
+            stopAutoTransition();
+            startAutoTransition();
+        });
+    });
+
+    // Initialize carousel with 5-letter leaderboard and load data
+    updateCarousel(0, 1);
+    loadAllLeaderboards();
 }
 
 // Toggle dark/light theme
@@ -176,8 +217,12 @@ async function startGame(difficulty) {
                 startTime: new Date()
             };
 
-            difficultySection.classList.add('hidden');
+            // Hide all sections except game section
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
             gameSection.classList.remove('hidden');
+            
             guessHistory.innerHTML = '';
             
             // Reset hint button
@@ -529,9 +574,9 @@ function enableInput() {
 }
 
 // Add this new function to show the endgame modal
-function showEndgameModal(isWin) {
+async function showEndgameModal(isWin) {
     const endTime = new Date();
-    const timeSpent = (endTime - gameState.startTime) / 1000; // Convert to seconds
+    const timeSpent = (endTime - gameState.startTime) / 1000;
     const minutes = Math.floor(timeSpent / 60);
     const seconds = Math.floor(timeSpent % 60);
     
@@ -542,7 +587,324 @@ function showEndgameModal(isWin) {
     endgameTime.textContent = `Time: ${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
     endgameAttempts.textContent = `Attempts: ${gameState.guesses.length}/${gameState.maxGuesses}`;
     
+    // Show endgame modal
     endgameModal.classList.add('show');
+    
+    // Show leaderboard section with current difficulty
+    const leaderboardSection = document.getElementById('leaderboard-section');
+    leaderboardSection.classList.remove('hidden');
+    
+    // Find the index of the current difficulty
+    const difficultyIndex = difficulties.indexOf(gameState.difficulty.toString());
+    if (difficultyIndex !== -1) {
+        currentLeaderboardIndex = difficultyIndex;
+        updateCarousel(0, difficultyIndex);
+    }
+    
+    // If game was won, handle score saving
+    if (isWin) {
+        const userName = await checkUserName();
+        if (!userName) {
+            // Show name input modal
+            nameModal.classList.add('show');
+        } else {
+            // Save score directly
+            await saveScore(gameState.difficulty, timeSpent);
+            await updateLeaderboard(gameState.difficulty);
+        }
+    }
+}
+
+// Add this function to generate a unique device ID
+function generateDeviceId() {
+    const id = 'device_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('deviceId', id);
+    return id;
+}
+
+// Add this function to check if user has a name
+async function checkUserName() {
+    try {
+        const response = await fetch('/api/user', {
+            method: 'GET',
+            headers: {
+                'X-Device-ID': deviceId
+            }
+        });
+        const data = await response.json();
+        return data.name;
+    } catch (error) {
+        console.error('Error checking user name:', error);
+        return null;
+    }
+}
+
+// Add this function to save user name
+async function saveUserName(name) {
+    try {
+        const response = await fetch('/api/user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Device-ID': deviceId
+            },
+            body: JSON.stringify({ name })
+        });
+        const data = await response.json();
+        return data.message === 'Name saved successfully';
+    } catch (error) {
+        console.error('Error saving user name:', error);
+        return false;
+    }
+}
+
+// Add this function to update leaderboard
+async function updateLeaderboard(difficulty) {
+    try {
+        const response = await fetch(`/api/leaderboard?difficulty=${difficulty}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch leaderboard data');
+        }
+        
+        const data = await response.json();
+        const leaderboardList = document.getElementById(`leaderboard-${difficulty}`);
+        if (!leaderboardList) return;
+        
+        leaderboardList.innerHTML = '';
+        
+        if (!data.scores || data.scores.length === 0) {
+            leaderboardList.innerHTML = '<div class="leaderboard-empty">No scores yet. Be the first to play!</div>';
+            return;
+        }
+
+        // Sort scores by time (fastest first)
+        data.scores.sort((a, b) => a.time - b.time);
+
+        data.scores.forEach((score, index) => {
+            const item = document.createElement('div');
+            item.className = 'leaderboard-item';
+            const date = new Date(score.timestamp);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            item.innerHTML = `
+                <span class="leaderboard-rank">#${index + 1}</span>
+                <span class="leaderboard-name">${score.name}</span>
+                <span class="leaderboard-time">${formatTime(score.time)}</span>
+                <span class="leaderboard-date">${formattedDate}</span>
+            `;
+            leaderboardList.appendChild(item);
+        });
+    } catch (error) {
+        console.error('Error updating leaderboard:', error);
+        const leaderboardList = document.getElementById(`leaderboard-${difficulty}`);
+        if (leaderboardList) {
+            leaderboardList.innerHTML = '<div class="leaderboard-empty">Error loading scores</div>';
+        }
+    }
+}
+
+// Add this function to format time
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    if (minutes > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+}
+
+// Add this function to save score
+async function saveScore(difficulty, time) {
+    try {
+        const response = await fetch('/api/score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Device-ID': deviceId
+            },
+            body: JSON.stringify({
+                difficulty,
+                time
+            })
+        });
+        const data = await response.json();
+        return data.message === 'Score added successfully';
+    } catch (error) {
+        console.error('Error saving score:', error);
+        return false;
+    }
+}
+
+// Add event listener for save name button
+saveNameBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (name) {
+        const success = await saveUserName(name);
+        if (success) {
+            nameModal.classList.remove('show');
+            const timeSpent = (new Date() - gameState.startTime) / 1000;
+            await saveScore(gameState.difficulty, timeSpent);
+            await updateLeaderboard(gameState.difficulty);
+        } else {
+            showToast('Error saving name. Please try again.', 'error');
+        }
+    } else {
+        showToast('Please enter a name', 'error');
+    }
+});
+
+// Add event listener for name input enter key
+nameInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        saveNameBtn.click();
+    }
+});
+
+// Add this function to switch between difficulty tabs
+function switchDifficultyTab(difficulty) {
+    // Update active tab
+    difficultyTabs.forEach(tab => {
+        if (tab.dataset.difficulty === difficulty) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
+    // Update active leaderboard list
+    leaderboardLists.forEach(list => {
+        if (list.id === `leaderboard-${difficulty}`) {
+            list.classList.add('active');
+        } else {
+            list.classList.remove('active');
+        }
+    });
+
+    // Update the leaderboard content
+    updateLeaderboard(difficulty);
+}
+
+// Add event listeners for difficulty tabs
+difficultyTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        switchDifficultyTab(tab.dataset.difficulty);
+    });
+});
+
+// Update the navigateLeaderboard function
+function navigateLeaderboard(index) {
+    if (index < 0 || index >= difficulties.length) return;
+    
+    const prevIndex = currentLeaderboardIndex;
+    currentLeaderboardIndex = index;
+    
+    // Update dots
+    dots.forEach((dot, i) => {
+        if (i === index) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+    
+    // Get the leaderboard lists
+    const prevList = document.getElementById(`leaderboard-${difficulties[prevIndex]}`);
+    const newList = document.getElementById(`leaderboard-${difficulties[index]}`);
+    
+    if (!prevList || !newList) return;
+    
+    // Determine slide direction
+    const isForward = index > prevIndex || (prevIndex === difficulties.length - 1 && index === 0);
+    
+    // Set initial positions
+    newList.style.transform = isForward ? 'translateX(100%)' : 'translateX(-100%)';
+    newList.style.opacity = '0';
+    newList.classList.add('active');
+    
+    // Trigger reflow
+    newList.offsetHeight;
+    
+    // Animate
+    prevList.classList.add('sliding-out');
+    prevList.style.transform = isForward ? 'translateX(-100%)' : 'translateX(100%)';
+    
+    newList.style.transform = 'translateX(0)';
+    newList.style.opacity = '1';
+    
+    // Clean up after animation
+    setTimeout(() => {
+        prevList.classList.remove('active', 'sliding-out');
+        prevList.style.transform = '';
+        prevList.style.opacity = '';
+    }, 500);
+}
+
+// Update the updateCarousel function
+function updateCarousel(prevIndex, newIndex) {
+    const prevList = document.getElementById(`leaderboard-${difficulties[prevIndex]}`);
+    const newList = document.getElementById(`leaderboard-${difficulties[newIndex]}`);
+    
+    if (!prevList || !newList) return;
+    
+    // Update dots
+    dots.forEach((dot, index) => {
+        if (index === newIndex) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+    
+    // Determine slide direction
+    const isForward = newIndex > prevIndex || (prevIndex === difficulties.length - 1 && newIndex === 0);
+    
+    // Set initial positions
+    newList.style.transform = isForward ? 'translateX(100%)' : 'translateX(-100%)';
+    newList.style.opacity = '0';
+    newList.classList.add('active');
+    
+    // Trigger reflow
+    newList.offsetHeight;
+    
+    // Animate
+    prevList.classList.add('sliding-out');
+    prevList.style.transform = isForward ? 'translateX(-100%)' : 'translateX(100%)';
+    
+    newList.style.transform = 'translateX(0)';
+    newList.style.opacity = '1';
+    
+    // Clean up after animation
+    setTimeout(() => {
+        prevList.classList.remove('active', 'sliding-out');
+        prevList.style.transform = '';
+        prevList.style.opacity = '';
+    }, 500);
+}
+
+// Add this function to start auto-transition
+function startAutoTransition() {
+    stopAutoTransition(); // Clear any existing interval
+    autoTransitionInterval = setInterval(() => {
+        const nextIndex = (currentLeaderboardIndex + 1) % difficulties.length;
+        navigateLeaderboard(nextIndex);
+    }, 5000); // Change every 5 seconds
+}
+
+// Add this function to stop auto-transition
+function stopAutoTransition() {
+    if (autoTransitionInterval) {
+        clearInterval(autoTransitionInterval);
+    }
+}
+
+// Add this new function to load all leaderboards
+async function loadAllLeaderboards() {
+    for (const difficulty of difficulties) {
+        await updateLeaderboard(difficulty);
+    }
 }
 
 // Initialize the game when the page loads
