@@ -2,11 +2,6 @@
 
 A modern take on the classic word-guessing game with multiple difficulty levels and a leaderboard system.
 
-![WordlePlus Screenshot 1](screenshots/Screenshot%202025-05-10%20150115.png)
-![WordlePlus Screenshot 2](screenshots/Screenshot%202025-05-10%20150133.png)
-![WordlePlus Screenshot 3](screenshots/Screenshot%202025-05-10%20150240.png)
-![WordlePlus Screenshot 4](screenshots/Screenshot%202025-05-10%20150255.png)
-
 ## Features
 
 - Multiple difficulty levels (3, 5, and 7 letter words)
@@ -110,4 +105,9 @@ python src/app.py
 ## Data Persistence
 
 The game's data (leaderboard and user information) is stored in the `src/GameEngine` directory. This directory is mounted as a volume in Docker to ensure data persistence between container restarts.
+![WordlePlus Screenshot 1](screenshots/Screenshot%202025-05-10%20150115.png)
+![WordlePlus Screenshot 2](screenshots/Screenshot%202025-05-10%20150133.png)
+![WordlePlus Screenshot 3](screenshots/Screenshot%202025-05-10%20150240.png)
+![WordlePlus Screenshot 4](screenshots/Screenshot%202025-05-10%20150255.png)
+
 
