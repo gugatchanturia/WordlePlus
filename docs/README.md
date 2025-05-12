@@ -42,6 +42,8 @@ New-Item -Path . -Name ".env" -ItemType "File"
 
 2. Add the following variables to your `.env` file:
 ```env
+FLASK_APP=app.py
+FLASK_ENV=production
 OPENAI_API_KEY=your_api_key_here  # Required for hints and word validation
 
 ```
