@@ -32,14 +32,18 @@ Before building the Docker image, you need to set up your environment variables:
 
 1. Create a `.env` file in the project root:
 ```bash
+# On Linux/macOS
 touch .env
+
+# On Windows (PowerShell)
+New-Item -Path . -Name ".env" -ItemType "File"
+
 ```
 
 2. Add the following variables to your `.env` file:
 ```env
-FLASK_APP=src/app.py
-FLASK_ENV=production
-OPENAI_API_KEY=your_api_key_here  # Replace with your OpenAI API key
+OPENAI_API_KEY=your_api_key_here  # Required for hints and word validation
+
 ```
 
 > ⚠️ **Important**: The game requires a valid OpenAI API key to function properly. Without it, the hint system and word validation features will not work.

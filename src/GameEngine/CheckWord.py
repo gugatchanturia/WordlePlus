@@ -2,12 +2,23 @@ from dotenv import load_dotenv
 import os
 from openai import OpenAI
 from GameEngine.Database import load_words, addToDictionary
+import inspect
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
 
 # Load existing words from JSON at startup
 load_words()
+
+print("Creating OpenAI client in CHECKWORD")
+print("OpenAI constructor location:", inspect.getfile(OpenAI))
+
+client = OpenAI(
+    api_key=api_key
+)
+
+print("Created OpenAI client successfully in CHECKWORD")
+
 
 def isValidWord(usersWord, n):
     usersWord = usersWord.lower()
@@ -20,9 +31,7 @@ def isValidWord(usersWord, n):
 
     else:
         print("word was not found in the existing dictionaries, asking ChatGPT if the word exists")
-        client = OpenAI(
-            api_key=api_key
-        )
+        
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
