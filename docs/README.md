@@ -52,7 +52,7 @@ OPENAI_API_KEY=your_api_key_here  # Required for hints and word validation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/WordlePlus.git
+git clone https://github.com/gugatchanturia/WordlePlus.git
 cd WordlePlus
 ```
 
