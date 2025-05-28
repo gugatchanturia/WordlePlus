@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: wordle-plus
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python src/app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production 
